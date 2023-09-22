@@ -71,6 +71,7 @@ public class SkyWalkingAgent {
     public static void premain(String agentArgs, Instrumentation instrumentation) throws PluginException {
         final PluginFinder pluginFinder;
         try {
+            // 初始化 Agent 配置
             SnifferConfigInitializer.initializeCoreConfig(agentArgs);
         } catch (Exception e) {
             // try to resolve a new logger, and use the new logger to write the error log here
@@ -87,7 +88,10 @@ public class SkyWalkingAgent {
             return;
         }
 
+        // 插件加载
         try {
+            // 使用 new PluginBootstrap().loadPlugins() 读取所有插件描述文件
+            // 使用 PluginFinder 对插件进行分类，分类的目的是使 find() 方法可以查找到某个类匹配的所有插件
             pluginFinder = new PluginFinder(new PluginBootstrap().loadPlugins());
         } catch (AgentPackageNotFoundException ape) {
             LOGGER.error(ape, "Locate agent.jar failure. Shutting down.");
@@ -99,6 +103,7 @@ public class SkyWalkingAgent {
 
         LOGGER.info("Skywalking agent begin to install transformer ...");
 
+        // 创建 ByteBuddy 对象并指定不需要增强的类
         AgentBuilder agentBuilder = newAgentBuilder().ignore(
             nameStartsWith("net.bytebuddy.")
                 .or(nameStartsWith("org.slf4j."))
@@ -125,6 +130,7 @@ public class SkyWalkingAgent {
             return;
         }
 
+        // 对类进行增强
         agentBuilder.type(pluginFinder.buildMatch())
                     .transform(new Transformer(pluginFinder))
                     .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
@@ -136,12 +142,14 @@ public class SkyWalkingAgent {
 
         LOGGER.info("Skywalking agent transformer has installed.");
 
+        // 初始化所有基础服务(实现了BootService接口)
         try {
             ServiceManager.INSTANCE.boot();
         } catch (Exception e) {
             LOGGER.error(e, "Skywalking agent boot failure.");
         }
 
+        // 注册JVM关闭事件钩子，触发 BootService 的 shutdown() 方法，进行内存清理、资源回收等工作，做优雅关闭
         Runtime.getRuntime()
                .addShutdownHook(new Thread(ServiceManager.INSTANCE::shutdown, "skywalking service shutdown thread"));
     }

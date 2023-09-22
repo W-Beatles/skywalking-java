@@ -68,6 +68,7 @@ public class SnifferConfigInitializer {
      * At the end, `agent.service_name` and `collector.servers` must not be blank.
      */
     public static void initializeCoreConfig(String agentOptions) {
+        // 读取文件 /config/agent.config 配置，并且可配置系统属性来指定配置文件的路径(-Dskywalking_config=/path/to/agent.config)
         AGENT_SETTINGS = new Properties();
         try (final InputStreamReader configFileStream = loadConfig()) {
             AGENT_SETTINGS.load(configFileStream);
@@ -80,12 +81,14 @@ public class SnifferConfigInitializer {
             LOGGER.error(e, "Failed to read the config file, skywalking is going to run in default config.");
         }
 
+        // 读取系统属性并覆盖。如：-Dskywalking.agent.service_name=yourAppName
         try {
             overrideConfigBySystemProp();
         } catch (Exception e) {
             LOGGER.error(e, "Failed to read the system properties.");
         }
 
+        // 读取agent启动参数并覆盖。如: -javaagent:/path/to/skywalking-agent.jar=agent.service_name=yourAppName
         agentOptions = StringUtil.trim(agentOptions, ',');
         if (!StringUtil.isEmpty(agentOptions)) {
             try {
@@ -97,8 +100,11 @@ public class SnifferConfigInitializer {
                 LOGGER.error(e, "Failed to parse the agent options, val is {}.", agentOptions);
             }
         }
+        // 配置优先级: Agent Options() > System.Properties(-D) > Config file
 
+        // 将配置值设置到全局的 Config 对象中
         initializeConfig(Config.class);
+        // 根据配置重新设置LOGGER
         // reconfigure logger after config initialization
         configureLogger();
         LOGGER = LogManager.getLogger(SnifferConfigInitializer.class);
