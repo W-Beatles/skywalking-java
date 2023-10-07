@@ -49,6 +49,7 @@ public class PluginBootstrap {
             return new ArrayList<AbstractClassEnhancePluginDefine>();
         }
 
+        // 读取插件配置文件，resources/skywalking-plugin.def
         for (URL pluginUrl : resources) {
             try {
                 PluginCfg.INSTANCE.load(pluginUrl.openStream());
@@ -59,7 +60,7 @@ public class PluginBootstrap {
 
         List<PluginDefine> pluginClassList = PluginCfg.INSTANCE.getPluginClassList();
 
-        List<AbstractClassEnhancePluginDefine> plugins = new ArrayList<AbstractClassEnhancePluginDefine>();
+        List<AbstractClassEnhancePluginDefine> plugins = new ArrayList<>();
         for (PluginDefine pluginDefine : pluginClassList) {
             try {
                 LOGGER.debug("loading plugin class {}.", pluginDefine.getDefineClass());

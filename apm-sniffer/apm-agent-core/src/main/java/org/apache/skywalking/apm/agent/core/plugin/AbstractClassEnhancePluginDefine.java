@@ -72,7 +72,7 @@ public abstract class AbstractClassEnhancePluginDefine {
          * find witness classes for enhance class
          */
         String[] witnessClasses = witnessClasses();
-        if (witnessClasses != null) {
+        if (witnessClasses != null && witnessClasses.length > 0) {
             for (String witnessClass : witnessClasses) {
                 if (!finder.exist(witnessClass, classLoader)) {
                     LOGGER.warn("enhance class {} by plugin {} is not activated. Witness class {} does not exist.", transformClassName, interceptorDefineClassName, witnessClass);

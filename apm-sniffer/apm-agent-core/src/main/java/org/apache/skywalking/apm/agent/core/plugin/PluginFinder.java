@@ -57,7 +57,7 @@ public class PluginFinder {
                 NameMatch nameMatch = (NameMatch) match;
                 LinkedList<AbstractClassEnhancePluginDefine> pluginDefines = nameMatchDefine.get(nameMatch.getClassName());
                 if (pluginDefines == null) {
-                    pluginDefines = new LinkedList<AbstractClassEnhancePluginDefine>();
+                    pluginDefines = new LinkedList<>();
                     nameMatchDefine.put(nameMatch.getClassName(), pluginDefines);
                 }
                 pluginDefines.add(plugin);
